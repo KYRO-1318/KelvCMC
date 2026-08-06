@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
 
 class DashboardController extends Controller
 {
@@ -12,12 +11,12 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         // Chart data: payments per month, last 6 months.
-        $months = collect(range(5, 0))->map(function ($offset) {
+        $months = collect(range(5, 0))->map(function ($offset) use ($user) {
             $month = now()->startOfMonth()->subMonths($offset);
 
             return [
                 'label' => $month->format('M'),
-                'total' => (float) Payment::where('status', 'paid')
+                'total' => (float) $user->payments()->where('status', 'paid')
                     ->whereBetween('paid_at', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()])
                     ->sum('amount'),
             ];
@@ -36,8 +35,9 @@ class DashboardController extends Controller
                 ->limit(4)
                 ->get(),
             'recentInvoices' => $user->invoices()->latest()->limit(5)->get(),
-            'chartMonths' => $months->pluck('label')->toJson(),
-            'chartTotals' => $months->pluck('total')->toJson(),
+            'recentOrders' => $user->orders()->latest()->limit(5)->get(),
+            'chartMonths' => $months->pluck('label')->values(),
+            'chartTotals' => $months->pluck('total')->values(),
         ]);
     }
 }

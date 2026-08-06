@@ -24,8 +24,24 @@ abstract class Module
     }
 
     /** Hook to register routes, views, events, commands... */
-    public function boot(): void
+    public function boot(): void {}
+
+    /** Optional module route file, relative to the project root. */
+    public function routesPath(): ?string
     {
+        return null;
+    }
+
+    /** Optional module service provider class. */
+    public function serviceProvider(): ?string
+    {
+        return null;
+    }
+
+    /** Optional module migration directory, relative to the project root. */
+    public function migrationsPath(): ?string
+    {
+        return null;
     }
 
     /** Additional client-portal sidebar links: [['label' => ..., 'route' => ..., 'icon' => ...], ...] */

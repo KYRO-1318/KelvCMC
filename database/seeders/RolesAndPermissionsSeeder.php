@@ -26,7 +26,7 @@ class RolesAndPermissionsSeeder extends Seeder
             );
 
             if ($roleConfig['permissions'] === '*') {
-                $role->permissions()->sync($permissions->pluck('id'));
+                $role->permissions()->sync(collect($permissions)->pluck('id')->all());
             } else {
                 $role->permissions()->sync(
                     collect($roleConfig['permissions'])->map(fn ($p) => $permissions[$p]->id)->all()

@@ -14,7 +14,7 @@ Self-hosted · Laravel 12 · Filament · Livewire · MIT License
 
 ---
 
-KelvCMC is a complete cloud management & billing platform designed for hosting providers. It runs on a classic **Plesk** shared-hosting stack (PHP 8.3+, MariaDB/MySQL, Composer) and includes everything you need to run a hosting business: storefront, billing with VAT and coupons, automated provisioning through Plesk/Pterodactyl/Proxmox, a support ticket system, payment gateways, a REST API and a modular plugin architecture.
+KelvCMC is a complete cloud management & billing platform designed for hosting providers. It runs on a classic **Plesk** shared-hosting stack (PHP 8.4+, MariaDB/MySQL, Composer) and includes everything you need to run a hosting business: storefront, billing with VAT and coupons, automated provisioning through Plesk/Pterodactyl/Proxmox, a support ticket system, payment gateways, a REST API and a modular plugin architecture.
 
 ## ✨ Features
 
@@ -33,7 +33,7 @@ KelvCMC is a complete cloud management & billing platform designed for hosting p
 
 ## 🧰 Tech stack
 
-- **Laravel 12** · PHP 8.3+ · MariaDB/MySQL
+- **Laravel 12** · PHP 8.4+ · MariaDB/MySQL
 - **Filament 3** admin panel · **Livewire 3** · **Tailwind CSS** (Vite)
 - **Redis** for queues/cache (falls back to database)
 - Laravel **Queue**, scheduler (cron), Guzzle HTTP client
@@ -43,7 +43,7 @@ KelvCMC is a complete cloud management & billing platform designed for hosting p
 
 ### Requirements
 
-- PHP **8.3+** with `pdo_mysql`, `mbstring`, `xml`, `curl`, `gd`, `zip`
+- PHP **8.4+** with `pdo_mysql`, `mbstring`, `xml`, `curl`, `gd`, `zip`
 - MariaDB 10.6+ / MySQL 8+
 - Composer 2
 - Node.js 20+ (only to build frontend assets)
@@ -57,12 +57,12 @@ cp .env.example .env            # set DB credentials, APP_URL, mail, gateways...
 composer install
 npm install && npm run build
 php artisan key:generate
-php artisan migrate --seed      # roles, permissions, settings, admin account
+php artisan kelvcmc:install --force # interactive setup, migrations, settings and admin
 php artisan storage:link
 php artisan queue:work          # in a separate terminal / supervisor
 ```
 
-Then open `/admin` and sign in with **admin@kelvcmc.local / password** (change it immediately!).
+Then open `/admin` and sign in with the administrator credentials chosen during setup.
 
 Want demo products and sample data?
 
@@ -167,7 +167,7 @@ Read the guides: [Plugin development](docs/plugins.md) · [Theme development](do
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Super admin | admin@kelvcmc.local | password |
+| Super admin | chosen during install | chosen during install |
 | Client | client@kelvcmc.local | password |
 
 ## 📄 License

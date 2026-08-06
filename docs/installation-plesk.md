@@ -1,6 +1,6 @@
 # Installing KelvCMC on Plesk shared hosting
 
-KelvCMC is designed to run on a classic **Plesk** stack: PHP 8.3+ with MariaDB/MySQL and Composer, served through the Plesk web server (Apache/Nginx). This guide walks you through the whole setup.
+KelvCMC is designed to run on a classic **Plesk** stack: PHP 8.4+ with MariaDB/MySQL and Composer, served through the Plesk web server (Apache/Nginx). This guide walks you through the whole setup.
 
 > **Tip:** A Plesk **Dedicated/VPS** subscription is recommended. Very restricted shared plans (no SSH, no cron, no Composer) will not be able to run the scheduler or queue worker.
 
@@ -10,7 +10,7 @@ KelvCMC is designed to run on a classic **Plesk** stack: PHP 8.3+ with MariaDB/M
 
 1. In Plesk, create a **Subscription** for KelvCMC:
    - Domain: `panel.yourcompany.com`
-   - PHP version: **8.3** (Plesk → PHP Settings → choose "8.3.x" and enable extensions: `pdo_mysql`, `mbstring`, `xml`, `curl`, `gd`, `zip`, `openssl`).
+   - PHP version: **8.4** (Plesk → PHP Settings → choose "8.4.x" and enable extensions: `pdo_mysql`, `mbstring`, `xml`, `curl`, `gd`, `zip`, `openssl`).
 2. Create a **Database**:
    - Plesk → Databases → *Add Database*
    - Name: `kelvcmc`, type **MySQL/MariaDB**, create a dedicated user with a strong password.
@@ -95,9 +95,9 @@ php artisan db:seed --force
 php artisan storage:link --force
 ```
 
-This creates roles/permissions, default settings, support categories and the admin account `admin@kelvcmc.local / password`.
+This creates roles/permissions, default settings and support categories. Create the administrator with `php artisan kelvcmc:install --force` or use `/install`.
 
-> **Change the admin password immediately** after first login.
+> Use a unique administrator password and enable 2FA after the first login.
 
 ## 6. Build frontend assets
 

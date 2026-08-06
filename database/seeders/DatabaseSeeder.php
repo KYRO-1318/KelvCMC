@@ -5,9 +5,7 @@ namespace Database\Seeders;
 use App\Models\Setting;
 use App\Models\TicketCategory;
 use App\Models\TicketDepartment;
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,17 +30,5 @@ class DatabaseSeeder extends Seeder
         foreach (['Billing', 'Support', 'Sales'] as $i => $department) {
             TicketDepartment::firstOrCreate(['name' => $department]);
         }
-
-        // Default admin account (change the password immediately!)
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@kelvcmc.local'],
-            [
-                'name' => 'KelvCMC Admin',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-            ]
-        );
-
-        $admin->assignRole('super-admin');
     }
 }

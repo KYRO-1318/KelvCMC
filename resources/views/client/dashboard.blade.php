@@ -85,6 +85,24 @@
             </div>
         </div>
 
+        {{-- Recent orders --}}
+        <div class="card">
+            <div class="flex items-center justify-between">
+                <h2 class="font-semibold text-white">Recent orders</h2>
+                <a href="{{ route('store.index') }}" class="text-xs font-medium text-violet-400 hover:text-violet-300">Browse store →</a>
+            </div>
+            <div class="mt-4 space-y-3">
+                @forelse ($recentOrders as $order)
+                    <div class="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-900/40 px-3 py-3">
+                        <div><div class="text-sm font-medium text-slate-200">{{ $order->number }}</div><div class="text-xs text-slate-500">{{ ($order->placed_at ?? $order->created_at)?->format('M j, Y') }}</div></div>
+                        <div class="text-right"><div class="font-semibold text-white">{{ kelvcmc_money($order->total) }}</div><span class="badge">{{ ucfirst($order->status) }}</span></div>
+                    </div>
+                @empty
+                    <p class="py-6 text-center text-sm text-slate-500">No orders yet.</p>
+                @endforelse
+            </div>
+        </div>
+
         {{-- Recent invoices --}}
         <div class="card">
             <div class="flex items-center justify-between">
@@ -136,10 +154,10 @@
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: @json(json_decode($chartMonths)),
+                    labels: @json($chartMonths),
                     datasets: [{
                         label: 'Spent',
-                        data: @json(json_decode($chartTotals)),
+                        data: @json($chartTotals),
                         borderColor: accent,
                         backgroundColor: accent + '33',
                         fill: true,

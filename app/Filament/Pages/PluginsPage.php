@@ -32,16 +32,16 @@ class PluginsPage extends Page
 
     public function modules(): array
     {
-        return app(ModuleManager::class)->modules();
+        return app(ModuleManager::class)->availableModules();
     }
 
     public function plugins(): array
     {
-        return app(ModuleManager::class)->plugins();
+        return app(ModuleManager::class)->availablePlugins();
     }
 
     public function isEnabled(string $id): bool
     {
-        return (bool) Setting::get("modules.enabled.{$id}", config("modules.modules.{$id}", true));
+        return app(ModuleManager::class)->isEnabled($id);
     }
 }

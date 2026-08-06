@@ -7,11 +7,28 @@ use App\Http\Controllers\Client\OrderController;
 use App\Http\Controllers\Client\ProfileController;
 use App\Http\Controllers\Client\ServiceController;
 use App\Http\Controllers\Client\TicketController;
+use App\Http\Controllers\InstallController;
 use App\Http\Controllers\StorefrontController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\TwoFactorController;
 use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web installer
+|--------------------------------------------------------------------------
+*/
+Route::middleware('installation')->prefix('install')->name('install.')->group(function () {
+    Route::get('/', [InstallController::class, 'index'])->name('index');
+    Route::post('/requirements', [InstallController::class, 'requirements'])->name('requirements');
+    Route::post('/database', [InstallController::class, 'database'])->name('database');
+    Route::post('/key', [InstallController::class, 'key'])->name('key');
+    Route::post('/migrate', [InstallController::class, 'migrate'])->name('migrate');
+    Route::post('/finish', [InstallController::class, 'finish'])->name('finish');
+});
+
+Route::get('/install/complete', [InstallController::class, 'complete'])->name('install.complete');
 
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +42,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'showRegisterForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:6,1');
 
-    Route::get('/login/2fa', [TwoFactorController::class, 'challenge'])->name('2fa.challenge');
-    Route::post('/login/2fa', [TwoFactorController::class, 'verify'])->middleware('throttle:2fa');
 });
+
+Route::get('/login/2fa', [TwoFactorController::class, 'challenge'])->name('2fa.challenge');
+Route::post('/login/2fa', [TwoFactorController::class, 'verify'])->middleware('throttle:2fa')->name('2fa.verify');
 
 Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 

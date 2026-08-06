@@ -18,7 +18,7 @@
             </div>
 
             <div class="card">
-                <form method="POST" action="{{ route('2fa.challenge') }}" class="mt-2 space-y-4">
+                <form method="POST" action="{{ route('2fa.verify') }}" class="mt-2 space-y-4">
                     @csrf
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-slate-300">Authentication code</label>

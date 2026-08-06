@@ -51,7 +51,7 @@ class BillingController extends Controller
 
         // Offline gateways (bank transfer) show the return screen with instructions.
         return redirect()->route('billing.payment.return', [
-            'payment' => $result['payment']->reference,
+            'reference' => $result['payment']->reference,
             'status' => 'pending',
         ]);
     }

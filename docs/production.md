@@ -6,7 +6,7 @@ Everything you need to run KelvCMC reliably in production: server setup, backgro
 
 | Component | Minimum | Recommended |
 | --- | --- | --- |
-| PHP | 8.3 | 8.3/8.4 with OPcache |
+| PHP | 8.4 | 8.4 with OPcache |
 | MariaDB/MySQL | 10.6 / 8.0 | MariaDB 10.11+ |
 | RAM | 1 GB | 2 GB+ |
 | Redis | — | 1 instance (queues + cache) |
@@ -91,7 +91,7 @@ server {
 
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
     }
 
     location ~ /\.(?!well-known).* {
@@ -107,7 +107,7 @@ server {
 - [ ] HTTPS only (HSTS header)
 - [ ] Admin panel protected by 2FA — enable *Settings → Security → Force 2FA for administrators*
 - [ ] Restrict `/admin` by IP if desired (nginx `allow/deny`)
-- [ ] Rotate the default admin password
+- [ ] Use a unique administrator password and enable 2FA
 - [ ] `.env` permissions: `chmod 600 .env` (owner `www-data`)
 - [ ] Filesystem permissions: `chown -R www-data:www-data storage bootstrap/cache`
 - [ ] Database user with least privilege (only `kelvcmc` database)

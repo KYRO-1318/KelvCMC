@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureTwoFactorIsVerified;
+use App\Http\Middleware\InstallationCompleted;
 use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Console\Scheduling\Schedule;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             '2fa' => EnsureTwoFactorIsVerified::class,
+            'installation' => InstallationCompleted::class,
         ]);
 
         $middleware->throttleApi('60,1');
