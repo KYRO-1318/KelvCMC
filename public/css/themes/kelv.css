@@ -1,0 +1,8 @@
+/* Kelv Noir — default violet dark theme */
+:root {
+    --k-bg: #020617;
+    --k-bg-soft: #0f172a;
+    --k-accent: #8b5cf6;
+    --k-accent-strong: #7c3aed;
+    --k-accent-soft: rgba(139, 92, 246, 0.14);
+}

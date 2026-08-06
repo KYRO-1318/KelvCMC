@@ -1,0 +1,8 @@
+{
+    "id": "domain",
+    "name": "Domain Tools",
+    "version": "1.0.0",
+    "class": "App\\Modules\\Domain\\DomainModule",
+    "description": "Domain availability checker and DNS record management via the active DNS provider (Cloudflare / PowerDNS).",
+    "views": "app/Modules/Domain/resources/views"
+}

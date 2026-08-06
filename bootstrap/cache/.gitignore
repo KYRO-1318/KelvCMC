@@ -1,0 +1,6 @@
+<?php
+
+return new Illuminate\Support\Collection([
+    Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
+    Illuminate\Queue\Console\WorkCommand::class,
+]);

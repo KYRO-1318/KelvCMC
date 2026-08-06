@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ */
+/* KelvCMC design tokens — themes override these via public/css/themes */
+/* ------------------------------------------------------------------ */
+:root {
+    --k-bg: #020617;
+    --k-bg-soft: #0f172a;
+    --k-bg-card: rgba(30, 41, 59, 0.45);
+    --k-border: rgba(148, 163, 184, 0.14);
+    --k-text: #f1f5f9;
+    --k-text-muted: #94a3b8;
+    --k-accent: #8b5cf6;
+    --k-accent-strong: #7c3aed;
+    --k-accent-soft: rgba(139, 92, 246, 0.14);
+    --k-success: #34d399;
+    --k-warning: #fbbf24;
+    --k-danger: #fb7185;
+}
+
+body {
+    background-color: var(--k-bg);
+    color: var(--k-text);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* subtle background glow */
+.k-bg-glow::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(600px 400px at 85% -10%, var(--k-accent-soft), transparent 60%),
+        radial-gradient(700px 500px at -10% 110%, rgba(56, 189, 248, 0.08), transparent 60%);
+    z-index: 0;
+}
+
+@layer components {
+    .card {
+        @apply rounded-xl border bg-slate-900/40 p-5 shadow-lg shadow-black/20 backdrop-blur;
+        border-color: var(--k-border);
+        background-color: var(--k-bg-card);
+    }
+
+    .input {
+        @apply w-full rounded-lg border border-slate-700/70 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:ring-2;
+        border-color: var(--k-border);
+    }
+    .input:focus {
+        border-color: color-mix(in srgb, var(--k-accent) 60%, transparent);
+        --tw-ring-color: color-mix(in srgb, var(--k-accent) 25%, transparent);
+    }
+
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition active:scale-[0.98];
+        background-image: linear-gradient(135deg, var(--k-accent), var(--k-accent-strong));
+        box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--k-accent) 60%, transparent);
+    }
+    .btn-primary:hover { filter: brightness(1.08); }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700/70 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800/60 active:scale-[0.98];
+        border-color: var(--k-border);
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition active:scale-[0.98];
+        background-image: linear-gradient(135deg, #f43f5e, #be123c);
+    }
+
+    .badge {
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+        background-color: var(--k-accent-soft);
+        color: color-mix(in srgb, var(--k-accent) 70%, white);
+    }
+
+    .nav-link {
+        @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800/50 hover:text-white;
+    }
+    .nav-link.active {
+        background-color: var(--k-accent-soft);
+        color: white;
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--k-accent) 35%, transparent);
+    }
+
+    .stat-card {
+        @apply card relative overflow-hidden p-4;
+    }
+    .stat-card .stat-icon {
+        @apply flex h-10 w-10 items-center justify-center rounded-lg;
+        background-color: var(--k-accent-soft);
+        color: var(--k-accent);
+    }
+}

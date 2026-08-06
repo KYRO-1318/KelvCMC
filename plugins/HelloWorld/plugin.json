@@ -1,0 +1,10 @@
+{
+    "name": "hello-world",
+    "version": "1.0.0",
+    "namespace": "Plugins\\HelloWorld",
+    "providers": [
+        "Plugins\\HelloWorld\\HelloWorldServiceProvider"
+    ],
+    "description": "Example plugin that registers a Filament page and a client portal page to demonstrate the KelvCMC plugin system.",
+    "views": "plugins/HelloWorld/resources/views"
+}

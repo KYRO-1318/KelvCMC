@@ -1,0 +1,8 @@
+/* Aurora — dark with teal/emerald accents */
+:root {
+    --k-bg: #022c22;
+    --k-bg-soft: #052e25;
+    --k-accent: #2dd4bf;
+    --k-accent-strong: #0d9488;
+    --k-accent-soft: rgba(45, 212, 191, 0.13);
+}

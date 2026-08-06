@@ -1,0 +1,8 @@
+/* Midnight — deep blue with cyan accents */
+:root {
+    --k-bg: #020617;
+    --k-bg-soft: #0c1222;
+    --k-accent: #22d3ee;
+    --k-accent-strong: #0891b2;
+    --k-accent-soft: rgba(34, 211, 238, 0.13);
+}

@@ -1,0 +1,358 @@
+openapi: 3.0.3
+info:
+  title: KelvCMC API
+  version: 1.0.0
+  description: |
+    Public REST API for the KelvCMC cloud management & billing platform.
+    Authenticate with a Sanctum personal access token using the `Authorization: Bearer <token>` header.
+    Tokens are created from the admin panel or via `php artisan sanctum:create-token`.
+  contact:
+    name: KelvCMC
+  license:
+    name: MIT
+servers:
+  - url: http://localhost/api/v1
+    description: Local development
+  - url: https://panel.example.com/api/v1
+    description: Production
+tags:
+  - name: Users
+    description: Account & user management
+  - name: Products
+    description: Store catalog
+  - name: Orders
+    description: Order placement & history
+  - name: Services
+    description: Provisioned services
+  - name: Invoices
+    description: Billing documents
+security:
+  - bearerAuth: []
+paths:
+  /users:
+    get:
+      tags: [Users]
+      summary: List users
+      description: Requires the `api.users.read` permission (admin role).
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Filter by name or email.
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25 }
+      responses:
+        '200':
+          description: Paginated list of users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/User' }
+                  meta:
+                    $ref: '#/components/schemas/Pagination'
+        '403':
+          description: Insufficient permissions.
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Current authenticated user
+      responses:
+        '200':
+          description: The authenticated user with relationship counts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Show a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: User details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/User' }
+  /products:
+    get:
+      tags: [Products]
+      summary: List active products
+      responses:
+        '200':
+          description: List of active products with their plans.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+  /products/{id}:
+    get:
+      tags: [Products]
+      summary: Show a product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Product with plans.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Product' }
+  /orders:
+    get:
+      tags: [Orders]
+      summary: List the current user's orders
+      parameters:
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25 }
+      responses:
+        '200':
+          description: Paginated list of orders.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+                  meta:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      tags: [Orders]
+      summary: Place a new order
+      description: Creates the order, its invoice, and provisions services when the invoice is paid (automatically if paid with account credit).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_id, cycle]
+              properties:
+                product_id:
+                  type: integer
+                  description: Product to order.
+                plan_id:
+                  type: integer
+                  description: Plan id (when the product has plans).
+                cycle:
+                  type: string
+                  enum: [monthly, quarterly, semi_annually, annually, onetime]
+                coupon:
+                  type: string
+                  description: Promotional code.
+                config:
+                  type: object
+                  description: Free-form configuration (e.g. domain, node_id).
+            examples:
+              order:
+                summary: Order shared hosting
+                value:
+                  product_id: 1
+                  plan_id: 2
+                  cycle: monthly
+                  coupon: WELCOME20
+                  config:
+                    domain: example.com
+      responses:
+        '201':
+          description: Order created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: '#/components/schemas/Order' }
+                  meta:
+                    type: object
+                    properties:
+                      status: { type: string, example: pending }
+        '422':
+          description: Validation error or unavailable product/coupon.
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Show an order
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Order with items and invoice.
+  /services:
+    get:
+      tags: [Services]
+      summary: List the current user's services
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, active, suspended, expired, cancelled, terminated]
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25 }
+      responses:
+        '200':
+          description: Paginated list of services.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Service' }
+                  meta:
+                    $ref: '#/components/schemas/Pagination'
+  /services/{id}:
+    get:
+      tags: [Services]
+      summary: Show a service
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Service with product, plan and server.
+  /invoices:
+    get:
+      tags: [Invoices]
+      summary: List the current user's invoices
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [draft, open, paid, overdue, cancelled, refunded]
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25 }
+      responses:
+        '200':
+          description: Paginated list of invoices.
+  /invoices/{id}:
+    get:
+      tags: [Invoices]
+      summary: Show an invoice
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Invoice with items and payments.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+  schemas:
+    Pagination:
+      type: object
+      properties:
+        total: { type: integer }
+        per_page: { type: integer }
+        current_page: { type: integer }
+        last_page: { type: integer }
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        company: { type: string, nullable: true }
+        country: { type: string, nullable: true }
+        credit_balance: { type: number, format: float }
+        is_active: { type: boolean }
+        created_at: { type: string, format: date-time }
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        type: { type: string }
+        module: { type: string }
+        price_monthly: { type: number }
+        features: { type: object }
+        plans:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              price_monthly: { type: number }
+              ram_mb: { type: integer, nullable: true }
+              disk_mb: { type: integer, nullable: true }
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        number: { type: string }
+        status: { type: string }
+        subtotal: { type: number }
+        discount: { type: number }
+        tax: { type: number }
+        total: { type: number }
+        placed_at: { type: string, format: date-time }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              description: { type: string }
+              quantity: { type: number }
+              unit_price: { type: number }
+              total: { type: number }
+              billing_cycle: { type: string }
+    Service:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        domain: { type: string, nullable: true }
+        status: { type: string }
+        billing_cycle: { type: string }
+        price: { type: number }
+        activated_at: { type: string, format: date-time, nullable: true }
+        expires_at: { type: string, format: date-time, nullable: true }
+        provisioning_data:
+          type: object
+          nullable: true
