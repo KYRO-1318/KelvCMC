@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Serve existing files and directories directly (but NOT PHP files at root).
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteCond %{REQUEST_URI} !^/index\.php$
+    RewriteRule ^ - [L]
+
+    # Forward everything else to the root index.php (which loads public/index.php).
+    RewriteRule ^ index.php [L]
+</IfModule>

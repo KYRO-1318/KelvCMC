@@ -41,6 +41,9 @@ yarn-error.log
 /.fleet
 /.scribe.edits
 /.temp
-.htaccess
+# Only ignore .htaccess in subdirectories, keep root and public/ tracked
+**/.htaccess
+!/.htaccess
+!/public/.htaccess
 .phpunit.cache
 /.vite

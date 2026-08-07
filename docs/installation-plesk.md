@@ -36,11 +36,11 @@ httpdocs/
 └── ...
 ```
 
-> **Important:** On classic Plesk you cannot always point the document root to `public/`. If you can't change the docroot, serve the whole project and add these Apache rules (in `public/.htaccess` or Plesk "Additional nginx directives") to deny direct access to sensitive files:
+> **CRITICAL — Document root:** Laravel requires the document root to be `public/`, NOT the project root. If you get "File not found" or a blank page, this is the cause.
 >
-> ```apache
-> RewriteRule ^(\.env|artisan|composer\.json|composer\.lock|storage|bootstrap|database|docs|config|resources|vendor) - [F,L]
-> ```
+> **Method A (recommended):** In Plesk, go to *Hosting Settings* → change *Document root* from `httpdocs` to `httpdocs/public`. Then reload the page.
+>
+> **Method B (fallback):** If you cannot change the document root, KelvCMC includes a root `index.php` and `.htaccess` that automatically forward all requests to `public/`. Just make sure `mod_rewrite` is enabled and `.htaccess` files are allowed (Plesk → Apache & nginx Settings → "Allow .htaccess").
 
 ## 3. Fix storage permissions (critical!)
 

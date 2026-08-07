@@ -76,7 +76,7 @@ Or use the one-shot installer:
 
 For a production database without demo records, use `php artisan kelvcmc:install --no-demo --force`.
 
-> Full Plesk-hosting walkthrough: [docs/installation-plesk.md](docs/installation-plesk.md) · Production hardening: [docs/production.md](docs/production.md)
+> **Plesk users:** Change the document root to `public/` in Plesk → Hosting Settings, or use the included root `index.php` fallback. Full guide: [docs/installation-plesk.md](docs/installation-plesk.md) · Production hardening: [docs/production.md](docs/production.md)
 
 ### Scheduled tasks (production)
 
