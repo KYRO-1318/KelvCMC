@@ -44,9 +44,12 @@
         }
     },
     "scripts": {
+        "pre-autoload-dump": [
+            "@php -r \"foreach(['storage/framework/cache','storage/framework/sessions','storage/framework/views','storage/logs','storage/app/private','storage/app/public'] as \\$d) { if(!is_dir(\\$d)) @mkdir(\\$d,0775,true); }\""
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi || (echo 'Package discovery skipped (ok on first install).' && exit 0)"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

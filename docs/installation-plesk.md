@@ -42,7 +42,25 @@ httpdocs/
 > RewriteRule ^(\.env|artisan|composer\.json|composer\.lock|storage|bootstrap|database|docs|config|resources|vendor) - [F,L]
 > ```
 
-## 3. Install dependencies
+## 3. Fix storage permissions (critical!)
+
+On Plesk, the web server runs as the subscription system user, but SSH runs as your login user. Without correct permissions, Laravel cannot write to `storage/` and `bootstrap/cache/`.
+
+```bash
+cd httpdocs
+
+# Create the storage directories if they don't exist (fresh git clone)
+mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views
+mkdir -p storage/logs storage/app/private storage/app/public
+
+# Set the correct group ownership (replace "systeemgebruiker" with your subscription user)
+chown -R systeemgebruiker:psacln storage bootstrap/cache
+chmod -R ug+rwX storage bootstrap/cache
+```
+
+> The `.gitkeep` files in `storage/` ensure the directories survive a git clone. If you deployed via Plesk Git, run the `mkdir` and `chmod` commands via SSH after the first deployment.
+
+## 4. Install dependencies
 
 ```bash
 cd httpdocs
@@ -56,7 +74,7 @@ curl -sS https://getcomposer.org/installer | php
 php composer.phar install --no-dev --optimize-autoloader
 ```
 
-## 4. Environment
+## 5. Environment
 
 ```bash
 cp .env.example .env
@@ -88,7 +106,7 @@ MAIL_HOST=your-smtp-host
 
 > **Never commit `.env`** — it is gitignored.
 
-## 5. Setup wizard
+## 6. Setup wizard
 
 ```bash
 php artisan kelvcmc:install --force
@@ -98,7 +116,7 @@ The interactive wizard generates `APP_KEY`, runs migrations, creates roles/permi
 
 > Use a unique administrator password and enable 2FA after the first login.
 
-## 6. Build frontend assets
+## 7. Build frontend assets
 
 ```bash
 npm install && npm run build
@@ -106,12 +124,12 @@ npm install && npm run build
 
 (If Node is unavailable, download and build locally, then upload `public/build/`.)
 
-## 7. SSL & docroot
+## 8. SSL & docroot
 
 1. Plesk → *SSL/TLS Certificates* → issue a **Let's Encrypt** certificate for `panel.yourcompany.com`.
 2. Make sure `https://` redirects work (Plesk → Hosting → "SSL/TLS" → enable redirect to HTTPS).
 
-## 8. Scheduler (cron) & queue worker
+## 9. Scheduler (cron) & queue worker
 
 Billing automation relies on the Laravel scheduler:
 
@@ -134,7 +152,7 @@ php artisan queue:work --tries=3 --timeout=120
 > On shared Plesk without SSH persistence, you can approximate the worker with a cron job every minute:
 > `cd httpdocs && php artisan queue:work --stop-when-empty` — this processes queued jobs (emails, provisioning) within a minute. A real daemon is better on a VPS.
 
-## 9. Plesk API integration (optional)
+## 10. Plesk API integration (optional)
 
 To let KelvCMC provision hosting automatically on the **same** Plesk server:
 
@@ -156,7 +174,7 @@ PLESK_VERIFY_SSL=false
 
 KelvCMC will then create Plesk clients, webspaces, databases and Let's Encrypt certs automatically, and suspend them on non-payment.
 
-## 10. Diagnostics
+## 11. Diagnostics
 
 Run the health checker after installation and after every major change:
 
@@ -166,7 +184,7 @@ php artisan kelvcmc:doctor
 
 It verifies PHP, extensions, APP_KEY, database, filesystem permissions, cache, queue, Filament assets, and configuration.
 
-## 11. Post-install checklist
+## 12. Post-install checklist
 
 - [ ] Admin password changed, 2FA enabled for admins (Settings → Security)
 - [ ] `APP_DEBUG=false` and a strong `APP_KEY`

@@ -141,6 +141,21 @@ Si vous utilisez Apache au lieu de Nginx (ex. Plesk), le fichier `.htaccess` dan
 </IfModule>
 ```
 
+## Résolution de l'erreur « Please provide a valid cache path »
+
+Cette erreur survient sur Plesk ou après un `git clone` frais car `storage/framework/cache/`, `storage/framework/sessions/` et `storage/framework/views/` sont absents du dépôt. KelvCMC inclut désormais des `.gitkeep` pour éviter cela, mais si vous rencontrez l'erreur :
+
+```bash
+mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views
+mkdir -p storage/logs storage/app/private storage/app/public
+
+# Sur Plesk (remplacer par votre utilisateur de souscription)
+chown -R votre_utilisateur:psacln storage bootstrap/cache
+chmod -R ug+rwX storage bootstrap/cache
+```
+
+Puis relancer `composer install`.
+
 ## Vérification finale
 
 ```bash

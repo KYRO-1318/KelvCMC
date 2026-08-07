@@ -9,6 +9,23 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
+// Ensure storage directories always exist before Laravel boots.
+// On a fresh clone (Plesk, git clone) these directories are absent and
+// Laravel's Compiler will throw "Please provide a valid cache path".
+foreach ([
+    '/storage/framework/cache',
+    '/storage/framework/sessions',
+    '/storage/framework/views',
+    '/storage/logs',
+    '/storage/app/private',
+    '/storage/app/public',
+] as $dir) {
+    $path = __DIR__.'/..'.$dir;
+    if (! is_dir($path)) {
+        @mkdir($path, 0775, true);
+    }
+}
+
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
 
@@ -23,10 +40,6 @@ if (! is_file($environmentFile) && is_file(__DIR__.'/../.env.example')) {
 
 $environment = is_file($environmentFile) ? (string) file_get_contents($environmentFile) : '';
 if (! is_file(__DIR__.'/../storage/installed.lock')) {
-    if (! is_dir(__DIR__.'/../storage/framework/sessions')) {
-        @mkdir(__DIR__.'/../storage/framework/sessions', 0775, true);
-    }
-
     if (! preg_match('/^KELVCMC_INSTALLER_ORIGINAL_SESSION_DRIVER=/m', $environment)
         && preg_match('/^SESSION_DRIVER=(.*)$/m', $environment, $sessionMatch)) {
         $environment .= 'KELVCMC_INSTALLER_ORIGINAL_SESSION_DRIVER='.$sessionMatch[1].PHP_EOL;
