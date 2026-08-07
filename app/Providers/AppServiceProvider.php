@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(TotpService::class);
 
-        $this->app->bind(\App\Integrations\Contracts\DnsProvider::class, \App\Integrations\Dns\DnsManager::class);
+        // DnsProvider is bound in IntegrationServiceProvider
     }
 
     public function boot(): void

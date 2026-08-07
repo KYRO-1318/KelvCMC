@@ -24,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'installation' => InstallationCompleted::class,
         ]);
 
-        $middleware->throttleApi('60,1');
+        $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

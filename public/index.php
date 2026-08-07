@@ -13,12 +13,13 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
 // On a fresh clone (Plesk, git clone) these directories are absent and
 // Laravel's Compiler will throw "Please provide a valid cache path".
 foreach ([
-    '/storage/framework/cache',
+    '/storage/framework/cache/data',
     '/storage/framework/sessions',
     '/storage/framework/views',
     '/storage/logs',
     '/storage/app/private',
     '/storage/app/public',
+    '/bootstrap/cache',
 ] as $dir) {
     $path = __DIR__.'/..'.$dir;
     if (! is_dir($path)) {
@@ -40,6 +41,9 @@ if (! is_file($environmentFile) && is_file(__DIR__.'/../.env.example')) {
 
 $environment = is_file($environmentFile) ? (string) file_get_contents($environmentFile) : '';
 if (! is_file(__DIR__.'/../storage/installed.lock')) {
+    // Ensure .env ends with a newline before appending values.
+    $environment = rtrim($environment).PHP_EOL;
+
     if (! preg_match('/^KELVCMC_INSTALLER_ORIGINAL_SESSION_DRIVER=/m', $environment)
         && preg_match('/^SESSION_DRIVER=(.*)$/m', $environment, $sessionMatch)) {
         $environment .= 'KELVCMC_INSTALLER_ORIGINAL_SESSION_DRIVER='.$sessionMatch[1].PHP_EOL;

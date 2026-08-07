@@ -10,12 +10,13 @@ define('LARAVEL_START', microtime(true));
 // Laravel's Compiler will throw "Please provide a valid cache path" when
 // composer's post-autoload-dump fires.
 foreach ([
-    '/storage/framework/cache',
+    '/storage/framework/cache/data',
     '/storage/framework/sessions',
     '/storage/framework/views',
     '/storage/logs',
     '/storage/app/private',
     '/storage/app/public',
+    '/bootstrap/cache',
 ] as $dir) {
     $path = __DIR__.$dir;
     if (! is_dir($path)) {

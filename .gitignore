@@ -18,10 +18,8 @@
 !/storage/framework/views/.gitkeep
 /storage/logs/*
 !/storage/logs/.gitkeep
-/storage/app/private/*
-!/storage/app/private/.gitkeep
-/storage/app/public/*
-!/storage/app/public/.gitkeep
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
 /.phpunit.cache
 /.php-cs-fixer.cache
 /.phpunit.result.cache

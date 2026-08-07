@@ -89,8 +89,8 @@ info "Adding the Laravel scheduler to cron (skipped if already present)..."
 echo "      * * * * * cd $(pwd) && php artisan schedule:run >> /dev/null 2>&1"
 
 # --- Permissions ---------------------------------------------------------------
-mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views 2>/dev/null || true
-mkdir -p storage/logs storage/app/private storage/app/public 2>/dev/null || true
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views 2>/dev/null || true
+mkdir -p storage/logs storage/app/private storage/app/public bootstrap/cache 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 ok "Storage directories and permissions set"
 

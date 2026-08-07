@@ -45,7 +45,7 @@
     },
     "scripts": {
         "pre-autoload-dump": [
-            "@php -r \"foreach(['storage/framework/cache','storage/framework/sessions','storage/framework/views','storage/logs','storage/app/private','storage/app/public'] as \\$d) { if(!is_dir(\\$d)) @mkdir(\\$d,0775,true); }\""
+            "@php -r \"foreach(['storage/framework/cache/data','storage/framework/sessions','storage/framework/views','storage/logs','storage/app/private','storage/app/public','bootstrap/cache'] as \\$d) { if(!is_dir(\\$d)) @mkdir(\\$d,0775,true); }\""
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

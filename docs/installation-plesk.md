@@ -50,8 +50,8 @@ On Plesk, the web server runs as the subscription system user, but SSH runs as y
 cd httpdocs
 
 # Create the storage directories if they don't exist (fresh git clone)
-mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views
-mkdir -p storage/logs storage/app/private storage/app/public
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views
+mkdir -p storage/logs storage/app/private storage/app/public bootstrap/cache
 
 # Set the correct group ownership (replace "systeemgebruiker" with your subscription user)
 chown -R systeemgebruiker:psacln storage bootstrap/cache
@@ -191,6 +191,7 @@ It verifies PHP, extensions, APP_KEY, database, filesystem permissions, cache, q
 - [ ] SMTP configured and test emails received
 - [ ] Cron entry added, queue worker running
 - [ ] Storage `chmod -R 775 storage bootstrap/cache`
+- [ ] `bootstrap/cache/` exists and is writable (missing = 500 error)
 - [ ] HTTPS forced, `.env` unreachable from the web
 - [ ] Gateway keys and Plesk/Pterodactyl/Proxmox credentials configured
 
