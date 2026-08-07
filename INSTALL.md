@@ -156,6 +156,17 @@ chmod -R ug+rwX storage bootstrap/cache
 
 Puis relancer `composer install`.
 
+## Erreur « Dépendances PHP non installées »
+
+Si la page affiche `vendor/autoload.php introuvable` ou que `php artisan` échoue de la même façon, les dépendances ne sont pas installées. Le dossier `vendor` est généré automatiquement par Composer — il ne doit jamais être créé, copié ou commité à la main :
+
+```bash
+cd /var/www/kelvcmc
+composer install --no-dev --optimize-autoloader --prefer-dist
+```
+
+Cette commande recrée `vendor/` et son autoloader (`vendor/autoload.php`). Relancer ensuite l'installation.
+
 ## Vérification finale
 
 ```bash

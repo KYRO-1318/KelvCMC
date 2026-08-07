@@ -1,0 +1,24 @@
+# Local dependencies and caches
+/vendor
+/node_modules
+/.git
+/.idea
+/.vscode
+
+# Secrets and runtime state
+.env
+.env.*
+!.env.example
+/storage/*
+!/storage/app
+!/storage/app/private
+!/storage/app/public
+!/storage/framework
+!/storage/logs
+
+# Generated frontend output is built inside Docker
+/public/build
+
+# Local logs and temporary files
+*.log
+npm-debug.log*
