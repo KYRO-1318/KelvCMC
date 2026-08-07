@@ -35,7 +35,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-300">Password</label>
-                            <input type="password" name="password" required class="input" placeholder="Min. 8 characters">
+                            <input type="password" name="password" required class="input" placeholder="Min. 12 characters">
                         </div>
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-300">Confirm</label>

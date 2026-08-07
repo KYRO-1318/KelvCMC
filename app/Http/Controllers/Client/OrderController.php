@@ -38,7 +38,9 @@ class OrderController extends Controller
                 array_merge($request->input('config', []), ['quantity' => $validated['quantity'] ?? 1]),
             );
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['order' => $e->getMessage()]);
+            report($e);
+
+            return back()->withErrors(['order' => 'Unable to place the order at this time.']);
         }
 
         if ($order->status === 'paid') {

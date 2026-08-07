@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Order;
+use App\Models\Plan;
 use App\Models\Product;
 use App\Services\OrderService;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ class OrderController extends ApiController
 {
     public function index(Request $request)
     {
-        $orders = auth()->user()->orders()->with('items')->latest()->paginate($request->integer('per_page', 25));
+        $orders = auth()->user()->orders()->with('items')->latest()->paginate($this->perPage($request));
 
         return $this->ok($orders->items(), ['pagination' => [
             'total' => $orders->total(),
@@ -31,9 +32,14 @@ class OrderController extends ApiController
             'config' => ['nullable', 'array'],
         ]);
 
-        $product = Product::findOrFail($validated['product_id']);
+        $product = Product::active()->findOrFail($validated['product_id']);
 
-        $plan = ! empty($validated['plan_id']) ? \App\Models\Plan::findOrFail($validated['plan_id']) : null;
+        $plan = ! empty($validated['plan_id'])
+            ? Plan::query()
+                ->where('product_id', $product->id)
+                ->where('is_active', true)
+                ->findOrFail($validated['plan_id'])
+            : null;
 
         try {
             $order = $orders->place(
@@ -45,7 +51,9 @@ class OrderController extends ApiController
                 $validated['config'] ?? [],
             );
         } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            report($e);
+
+            return response()->json(['message' => 'Unable to place the order at this time.'], 422);
         }
 
         return $this->ok($order->load(['items', 'invoice']), ['status' => $order->status]);

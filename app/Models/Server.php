@@ -13,6 +13,10 @@ class Server extends Model
         'remote_id', 'credentials', 'status', 'location', 'load', 'metadata', 'last_checked_at',
     ];
 
+    protected $hidden = [
+        'credentials',
+    ];
+
     protected $casts = [
         'metadata' => 'array',
         'load' => 'decimal:2',

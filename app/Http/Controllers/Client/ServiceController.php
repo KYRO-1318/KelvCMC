@@ -27,6 +27,18 @@ class ServiceController extends Controller
         ]);
     }
 
+    public function credentials(Service $service)
+    {
+        $this->authorizeAccess($service);
+
+        abort_unless($service->password, 404);
+
+        return response()
+            ->json(['password' => $service->password])
+            ->header('Cache-Control', 'no-store, private')
+            ->header('Pragma', 'no-cache');
+    }
+
     public function action(Request $request, Service $service, ProvisioningService $provisioning, BillingService $billing)
     {
         $this->authorizeAccess($service);

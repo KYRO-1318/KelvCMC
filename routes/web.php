@@ -66,6 +66,7 @@ Route::middleware(['auth', '2fa'])->group(function () {
     // Services
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/{service}', [ServiceController::class, 'show'])->name('services.show');
+    Route::get('/services/{service}/credentials', [ServiceController::class, 'credentials'])->middleware('throttle:10,1')->name('services.credentials');
     Route::post('/services/{service}/action', [ServiceController::class, 'action'])->name('services.action');
 
     // Invoices

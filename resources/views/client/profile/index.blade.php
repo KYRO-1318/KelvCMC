@@ -93,11 +93,11 @@
             @if ($user->hasPendingTwoFactorSetup())
                 <div class="mt-5 grid gap-5 sm:grid-cols-2">
                     <div class="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
-                        <div class="text-xs font-medium uppercase tracking-wide text-slate-500">1 · Scan the QR code</div>
-                        <div class="mt-3 flex justify-center">
-                            <img src="{{ $twoFactorQrUrl }}" alt="QR code" class="rounded-lg bg-white p-2" width="180" height="180">
+                        <div class="text-xs font-medium uppercase tracking-wide text-slate-500">1 · Add the secret to your app</div>
+                        <div class="mt-3 rounded-lg border border-slate-700 bg-slate-950 p-4 text-center">
+                            <code class="break-all text-sm tracking-[0.18em] text-violet-300">{{ $twoFactorSecret }}</code>
                         </div>
-                        <p class="mt-3 text-center text-xs text-slate-500">Or enter this secret manually:<br><code class="text-violet-300">{{ $user->two_factor_secret }}</code></p>
+                        <p class="mt-3 text-center text-xs text-slate-500">Enter this secret manually in your authenticator app. It is shown only while setup is pending.</p>
                     </div>
                     <div class="flex flex-col">
                         <div class="text-xs font-medium uppercase tracking-wide text-slate-500">2 · Confirm with a code</div>

@@ -13,7 +13,7 @@ class ServiceController extends ApiController
             ->with(['product', 'plan'])
             ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
             ->latest()
-            ->paginate($request->integer('per_page', 25));
+            ->paginate($this->perPage($request));
 
         return $this->ok($services->items(), ['pagination' => [
             'total' => $services->total(),

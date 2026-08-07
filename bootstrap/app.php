@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureTwoFactorIsVerified;
 use App\Http\Middleware\InstallationCompleted;
 use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,10 +25,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'installation' => InstallationCompleted::class,
         ]);
 
+        $middleware->append(SecurityHeaders::class);
         $middleware->throttleApi();
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->shouldRenderJsonWhen(fn ($request) =>
+            $request->is('api/*') || $request->wantsJson()
+        );
     })
     ->withSchedule(function (Schedule $schedule) {
         // Billing & provisioning automation (requires the Laravel scheduler / cron).

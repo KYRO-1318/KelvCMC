@@ -11,7 +11,7 @@ class UserController extends ApiController
     {
         $users = User::query()
             ->when($request->input('search'), fn ($q, $search) => $q->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")))
-            ->paginate($request->integer('per_page', 25));
+            ->paginate($this->perPage($request));
 
         return $this->ok($users->items(), ['pagination' => [
             'total' => $users->total(),

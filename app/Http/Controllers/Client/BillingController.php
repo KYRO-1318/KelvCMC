@@ -38,7 +38,9 @@ class BillingController extends Controller
         try {
             $result = $this->payments->initiate($invoice, $validated['gateway']);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['gateway' => $e->getMessage()]);
+            report($e);
+
+            return back()->withErrors(['gateway' => 'This payment method is currently unavailable.']);
         }
 
         if ($result['payment']->status === 'paid') {

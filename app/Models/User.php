@@ -111,23 +111,6 @@ class User extends Authenticatable
             && $this->two_factor_confirmed_at === null;
     }
 
-    public function twoFactorQrSvgUrl(): ?string
-    {
-        if (! $this->two_factor_secret) {
-            return null;
-        }
-
-        $otpauth = sprintf(
-            'otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30',
-            rawurlencode(config('kelvcmc.brand.name', 'KelvCMC')),
-            rawurlencode($this->email),
-            $this->two_factor_secret,
-            rawurlencode(config('kelvcmc.brand.name', 'KelvCMC'))
-        );
-
-        return 'https://chart.googleapis.com/chart?chs=240x240&chld=M|0&cht=qr&chl='.urlencode($otpauth);
-    }
-
     public function flushTwoFactor(): void
     {
         $this->forceFill([

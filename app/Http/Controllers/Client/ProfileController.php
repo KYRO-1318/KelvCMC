@@ -10,15 +10,13 @@ use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    public function index(TotpService $totp)
+    public function index()
     {
         $user = auth()->user();
 
-        $pendingSecret = $user->hasPendingTwoFactorSetup() ? $user->two_factor_secret : null;
-
         return view('client.profile.index', [
             'user' => $user,
-            'twoFactorQrUrl' => $user->twoFactorQrSvgUrl(),
+            'twoFactorSecret' => $user->hasPendingTwoFactorSetup() ? $user->two_factor_secret : null,
             'recoveryCodes' => $user->hasEnabledTwoFactorAuth() ? $user->two_factor_recovery_codes : null,
         ]);
     }
@@ -27,28 +25,32 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'company' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-            'address' => ['nullable', 'string', 'max:255'],
-            'city' => ['nullable', 'string', 'max:255'],
-            'zip' => ['nullable', 'string', 'max:20'],
-            'country' => ['nullable', 'string', 'size:2'],
-        ]);
+        $hasPasswordChange = $request->filled('current_password')
+            || $request->filled('password')
+            || $request->filled('password_confirmation');
 
-        $user->update($validated);
-
-        if ($request->filled('current_password')) {
+        if ($hasPasswordChange) {
             $request->validate([
                 'current_password' => ['required', 'current_password'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
+                'password' => ['required', 'string', 'min:12', 'confirmed'],
             ]);
 
             $user->update(['password' => Hash::make($request->input('password'))]);
-        }
+            AuditLogger::record('profile.password_updated', $user);
+        } else {
+            $validated = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'company' => ['nullable', 'string', 'max:255'],
+                'phone' => ['nullable', 'string', 'max:50'],
+                'address' => ['nullable', 'string', 'max:255'],
+                'city' => ['nullable', 'string', 'max:255'],
+                'zip' => ['nullable', 'string', 'max:20'],
+                'country' => ['nullable', 'string', 'size:2'],
+            ]);
 
-        AuditLogger::record('profile.updated', $user);
+            $user->update($validated);
+            AuditLogger::record('profile.updated', $user);
+        }
 
         return back()->with('success', 'Profile updated.');
     }

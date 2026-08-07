@@ -80,7 +80,7 @@
                         <div>
                             <div class="text-xs uppercase tracking-wide text-slate-500">Password</div>
                             <div class="mt-1 flex items-center gap-2">
-                                <span class="font-mono text-sm text-slate-200" id="svc-password" data-secret="{{ $service->password }}" data-placeholder="••••••••••••" data-revealed="0">••••••••••••</span>
+                                <span class="font-mono text-sm text-slate-200" id="svc-password" data-placeholder="••••••••••••" data-endpoint="{{ route('services.credentials', $service) }}" data-revealed="0">••••••••••••</span>
                                 <button type="button" data-reveal="#svc-password" class="text-xs font-medium text-violet-400 hover:text-violet-300">Show</button>
                             </div>
                         </div>

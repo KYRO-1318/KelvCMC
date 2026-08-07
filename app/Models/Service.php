@@ -17,6 +17,11 @@ class Service extends Model
         'activated_at', 'expires_at', 'suspended_at', 'terminated_at',
     ];
 
+    protected $hidden = [
+        'password',
+        'provisioning_data',
+    ];
+
     protected $casts = [
         'provisioning_data' => 'array',
         'metadata' => 'array',
