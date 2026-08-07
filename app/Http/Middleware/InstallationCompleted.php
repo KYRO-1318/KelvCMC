@@ -9,9 +9,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class InstallationCompleted
 {
-    public function handle(Request $request, Closure $next, InstallationService $installer): Response
+    public function handle(Request $request, Closure $next): Response
     {
-        if ($installer->isInstalled()) {
+        if (app(InstallationService::class)->isInstalled()) {
             return redirect()->route('landing')->with('info', 'KelvCMC is already installed.');
         }
 

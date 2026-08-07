@@ -56,9 +56,7 @@ cd kelvcmc
 cp .env.example .env            # set DB credentials, APP_URL, mail, gateways...
 composer install
 npm install && npm run build
-php artisan key:generate
 php artisan kelvcmc:install --force # interactive setup, migrations, settings and admin
-php artisan storage:link
 php artisan queue:work          # in a separate terminal / supervisor
 ```
 
@@ -75,6 +73,8 @@ Or use the one-shot installer:
 ```bash
 ./install.sh --demo
 ```
+
+For a production database without demo records, use `php artisan kelvcmc:install --no-demo --force`.
 
 > Full Plesk-hosting walkthrough: [docs/installation-plesk.md](docs/installation-plesk.md) · Production hardening: [docs/production.md](docs/production.md)
 

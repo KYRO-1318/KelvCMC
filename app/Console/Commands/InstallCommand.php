@@ -10,6 +10,7 @@ class InstallCommand extends Command
 {
     protected $signature = 'kelvcmc:install
                             {--demo : Seed demo catalog and sample customer data}
+                            {--no-demo : Do not seed demo catalog and sample customer data}
                             {--force : Allow installation in production}
                             {--name= : Site name}
                             {--url= : Public site URL}
@@ -55,14 +56,26 @@ class InstallCommand extends Command
         $dbPort = (int) ($this->option('db-port') ?: $this->ask('Database port', env('DB_PORT', '3306')));
         $dbDatabase = $this->option('db-database') ?: $this->ask('Database name', env('DB_DATABASE', 'kelvcmc'));
         $dbUsername = $this->option('db-username') ?: $this->ask('Database username', env('DB_USERNAME', 'kelvcmc'));
-        $dbPassword = $this->option('db-password') ?? $this->secret('Database password');
+        $dbPassword = $this->option('db-password') ?? $this->secret('Database password', env('DB_PASSWORD', ''));
 
         $siteName = $this->option('name') ?: $this->ask('Site name', config('kelvcmc.brand.name', 'KelvCMC'));
         $siteUrl = $this->option('url') ?: $this->ask('Site URL', env('APP_URL', 'http://localhost'));
+        if (! filter_var($siteUrl, FILTER_VALIDATE_URL)) {
+            $this->error('Site URL must be a valid URL.');
+            return self::FAILURE;
+        }
         $currency = strtoupper($this->option('currency') ?: $this->ask('Billing currency', config('kelvcmc.billing.currency', 'EUR')));
+        if (! preg_match('/^[A-Z]{3}$/', $currency)) {
+            $this->error('Currency must be a 3-letter ISO code.');
+            return self::FAILURE;
+        }
         $locale = $this->option('locale') ?: $this->ask('Default language', config('app.locale', 'en'));
         $adminName = $this->option('admin-name') ?: $this->ask('Administrator name', 'KelvCMC Admin');
         $adminEmail = $this->option('admin-email') ?: $this->ask('Administrator email', 'admin@kelvcmc.local');
+        if (! filter_var($adminEmail, FILTER_VALIDATE_EMAIL)) {
+            $this->error('Administrator email is invalid.');
+            return self::FAILURE;
+        }
         $adminPassword = $this->option('admin-password') ?: $this->secret('Administrator password (min. 12 characters)');
 
         if (! is_string($adminPassword) || strlen($adminPassword) < 12) {
@@ -72,6 +85,7 @@ class InstallCommand extends Command
         }
 
         try {
+            $installer->assertWritable();
             $installer->configureEnvironment([
                 'DB_CONNECTION' => $dbConnection,
                 'DB_HOST' => $dbHost,
@@ -91,11 +105,9 @@ class InstallCommand extends Command
             $this->components->task('Seeding roles, permissions and defaults', fn () => $installer->seedBase());
             $this->components->task('Creating administrator', fn () => $installer->createAdmin($adminName, $adminEmail, $adminPassword));
             $this->components->task('Saving installation settings', fn () => $installer->saveSettings($siteName, $siteUrl, $currency, $locale));
-            $this->components->task('Creating storage link', function () {
-                $this->callSilent('storage:link', ['--force' => true]);
-            });
+            $this->components->task('Creating storage link', fn () => $installer->createStorageLink());
 
-            if ($this->option('demo')) {
+            if (! $this->option('no-demo')) {
                 $this->components->task('Seeding demo data', fn () => $installer->seedDemo());
             }
 

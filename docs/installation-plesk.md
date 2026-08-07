@@ -56,13 +56,14 @@ curl -sS https://getcomposer.org/installer | php
 php composer.phar install --no-dev --optimize-autoloader
 ```
 
-## 4. Environment & key
+## 4. Environment
 
 ```bash
 cp .env.example .env
 nano .env          # fill in DB_* with the Plesk database credentials
-php artisan key:generate
 ```
+
+The `kelvcmc:install` wizard handles `APP_KEY` generation automatically.
 
 Required `.env` values on Plesk:
 
@@ -87,15 +88,13 @@ MAIL_HOST=your-smtp-host
 
 > **Never commit `.env`** — it is gitignored.
 
-## 5. Migrate & seed
+## 5. Setup wizard
 
 ```bash
-php artisan migrate --force
-php artisan db:seed --force
-php artisan storage:link --force
+php artisan kelvcmc:install --force
 ```
 
-This creates roles/permissions, default settings and support categories. Create the administrator with `php artisan kelvcmc:install --force` or use `/install`.
+The interactive wizard generates `APP_KEY`, runs migrations, creates roles/permissions, default settings, the storage link, and your first administrator. Use `--no-demo` for a clean production database.
 
 > Use a unique administrator password and enable 2FA after the first login.
 
@@ -157,7 +156,17 @@ PLESK_VERIFY_SSL=false
 
 KelvCMC will then create Plesk clients, webspaces, databases and Let's Encrypt certs automatically, and suspend them on non-payment.
 
-## 10. Post-install checklist
+## 10. Diagnostics
+
+Run the health checker after installation and after every major change:
+
+```bash
+php artisan kelvcmc:doctor
+```
+
+It verifies PHP, extensions, APP_KEY, database, filesystem permissions, cache, queue, Filament assets, and configuration.
+
+## 11. Post-install checklist
 
 - [ ] Admin password changed, 2FA enabled for admins (Settings → Security)
 - [ ] `APP_DEBUG=false` and a strong `APP_KEY`

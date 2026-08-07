@@ -5,6 +5,23 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+// Prepare a fresh checkout for the CLI installer before Laravel boots.
+$environmentFile = __DIR__.'/.env';
+if (! is_file($environmentFile) && is_file(__DIR__.'/.env.example')) {
+    copy(__DIR__.'/.env.example', $environmentFile);
+}
+if (is_file($environmentFile)) {
+    $environment = (string) file_get_contents($environmentFile);
+    if (! preg_match('/^APP_KEY=.+$/m', $environment)) {
+        $key = 'base64:'.base64_encode(random_bytes(32));
+        $environment = (string) preg_replace('/^APP_KEY=.*$/m', 'APP_KEY='.$key, $environment, 1, $count);
+        if ($count === 0) {
+            $environment = rtrim($environment).PHP_EOL.'APP_KEY='.$key.PHP_EOL;
+        }
+        file_put_contents($environmentFile, $environment, LOCK_EX);
+    }
+}
+
 // Register the Composer autoloader.
 require __DIR__.'/vendor/autoload.php';
 

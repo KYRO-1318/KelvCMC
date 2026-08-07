@@ -23,7 +23,12 @@ class PluginsPage extends Page
         $key = "modules.enabled.{$id}";
         $current = Setting::get($key, config("modules.modules.{$id}", true));
 
-        Setting::set($key, ! $current, 'modules');
+        $manager = app(ModuleManager::class);
+        if ($type === 'module' && ! $current) {
+            $manager->install($id);
+        } else {
+            Setting::set($key, ! $current, 'modules');
+        }
 
         AuditLogger::record('modules.toggle', null, ['type' => $type, 'id' => $id, 'enabled' => ! $current]);
 

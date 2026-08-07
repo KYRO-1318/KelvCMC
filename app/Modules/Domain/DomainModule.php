@@ -17,32 +17,32 @@ class DomainModule extends Module
         return 'Domain availability checks and DNS management through the active DNS provider.';
     }
 
-    public function boot(): void
+    public function serviceProvider(): ?string
     {
-        $this->app['router']->middleware(['web', 'auth'])
-            ->prefix('domains')
-            ->group(function ($router) {
-                $router->get('/', [Http\Controllers\DomainController::class, 'index'])->name('modules.domain.index');
-                $router->post('/check', [Http\Controllers\DomainController::class, 'check'])->name('modules.domain.check');
-                $router->post('/dns', [Http\Controllers\DomainController::class, 'createDnsRecord'])->name('modules.domain.dns');
-            });
+        return ServiceProvider::class;
+    }
+
+    public function routesPath(): ?string
+    {
+        return 'app/Modules/Domain/routes.php';
+    }
+
+    public function migrationsPath(): ?string
+    {
+        return 'app/Modules/Domain/migrations';
     }
 
     public function navItems(): array
     {
-        return [
-            [
-                'label' => 'Domains',
-                'route' => 'modules.domain.index',
-                'icon' => 'globe',
-            ],
-        ];
+        return [[
+            'label' => 'Domains',
+            'route' => 'modules.domain.index',
+            'icon' => 'globe',
+        ]];
     }
 
     public function filamentWidgets(): array
     {
-        return [
-            DomainAvailabilityWidget::class,
-        ];
+        return [DomainAvailabilityWidget::class];
     }
 }

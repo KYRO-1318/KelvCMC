@@ -61,7 +61,7 @@ php artisan kelvcmc:install --force
 
 La commande vérifie PHP, extensions, Composer, Node et npm, génère `APP_KEY`, exécute les migrations, crée les rôles/permissions, demande le site, la devise, la langue et le premier administrateur, puis crée `storage/installed.lock`.
 
-Pour ajouter le catalogue de démonstration :
+L'installation CLI et web initialise aussi le catalogue de démonstration demandé par KelvCMC. Pour une base de production sans données de démonstration, utilisez `--no-demo` avec la commande CLI. Pour ajouter le catalogue sur une base de démonstration vierge :
 
 ```bash
 php artisan kelvcmc:install --force --demo
@@ -86,7 +86,7 @@ Les six étapes sont :
 5. paramètres du site et compte admin ;
 6. verrouillage et fin.
 
-Le fichier `storage/installed.lock` désactive automatiquement `/install` après réussite.
+Le fichier `storage/installed.lock` désactive automatiquement `/install` après réussite. L’assistant web crée aussi le lien `public/storage`.
 
 ## Nginx
 
@@ -97,12 +97,16 @@ server {
     root /var/www/kelvcmc/public;
     index index.php;
 
+    # Block access to sensitive files
+    location ~ /\.(?!well-known).* { deny all; }
+    location ~ /(composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|artisan|phpunit\.xml) { deny all; }
+    location ~ /(storage/.*\.(log|sql|zip|tar|gz)|vendor/.*) { deny all; }
+
     location / { try_files $uri $uri/ /index.php?$query_string; }
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/run/php/php8.4-fpm.sock;
     }
-    location ~ /\.(?!well-known).* { deny all; }
 }
 ```
 
@@ -119,14 +123,31 @@ sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d panel.example.com
 ```
 
+## Apache (Plesk / cPanel)
+
+Si vous utilisez Apache au lieu de Nginx (ex. Plesk), le fichier `.htaccess` dans `public/` est déjà présent. Ajoutez ceci pour protéger les fichiers sensibles :
+
+```apache
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+<FilesMatch "(composer\.(json|lock)|package\.json|package-lock\.json|vite\.config\.js|tailwind\.config\.js|artisan|phpunit\.xml)">
+    Require all denied
+</FilesMatch>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /index.php?/$1 [L]
+</IfModule>
+```
+
 ## Vérification finale
 
 ```bash
 php artisan optimize:clear
 php artisan migrate --force
-php artisan db:seed --force
 npm run build
-php artisan route:list
+php artisan kelvcmc:doctor
 ```
 
 URLs principales : `/`, `/login`, `/dashboard`, `/admin`.

@@ -34,6 +34,8 @@ class InstallController extends Controller
 
     public function database(Request $request)
     {
+        abort_unless((int) $request->session()->get('install.step', 1) === 2, 419);
+
         $data = $request->validate([
             'db_connection' => ['required', 'in:mysql,mariadb'],
             'db_host' => ['required', 'string', 'max:255'],
@@ -65,6 +67,8 @@ class InstallController extends Controller
 
     public function key(Request $request)
     {
+        abort_unless((int) $request->session()->get('install.step', 1) === 3, 419);
+
         try {
             $this->installer->generateKey();
         } catch (RuntimeException $exception) {
@@ -78,6 +82,8 @@ class InstallController extends Controller
 
     public function migrate(Request $request)
     {
+        abort_unless((int) $request->session()->get('install.step', 1) === 4, 419);
+
         try {
             $this->installer->testDatabaseConnection();
             $this->installer->migrate();
@@ -92,6 +98,8 @@ class InstallController extends Controller
 
     public function finish(Request $request)
     {
+        abort_unless((int) $request->session()->get('install.step', 1) === 5, 419);
+
         $data = $request->validate([
             'site_name' => ['required', 'string', 'max:255'],
             'site_url' => ['required', 'url', 'max:255'],
@@ -111,22 +119,26 @@ class InstallController extends Controller
                 'KELVCMC_CURRENCY' => strtoupper($data['currency']),
             ]);
             $this->installer->seedBase();
+            $this->installer->seedDemo();
             $this->installer->createAdmin($data['admin_name'], $data['admin_email'], $data['admin_password']);
             $this->installer->saveSettings($data['site_name'], $data['site_url'], strtoupper($data['currency']), $data['locale']);
+            $this->installer->createStorageLink();
             $this->installer->lock();
         } catch (RuntimeException $exception) {
             return back()->withInput()->withErrors(['installation' => $exception->getMessage()]);
         }
 
         $request->session()->forget('install');
-        $request->session()->put('install.complete', true);
 
-        return redirect()->route('install.complete');
+        // Render in this request because the installer switches the default
+        // session/cache drivers back to their production values before the
+        // next request.
+        return response()->view('install.complete');
     }
 
-    public function complete(Request $request)
+    public function complete()
     {
-        abort_unless($request->session()->pull('install.complete'), 404);
+        abort_unless($this->installer->isInstalled(), 404);
 
         return view('install.complete');
     }

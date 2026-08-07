@@ -29,6 +29,15 @@ class InstallationService
         return is_file(storage_path('installed.lock'));
     }
 
+    public function assertWritable(): void
+    {
+        foreach ([base_path(), storage_path(), base_path('bootstrap/cache')] as $path) {
+            if (! is_writable($path)) {
+                throw new RuntimeException("Directory is not writable: {$path}");
+            }
+        }
+    }
+
     /** @return array<string, bool|string> */
     public function serverRequirements(): array
     {
@@ -46,7 +55,7 @@ class InstallationService
         return $requirements;
     }
 
-    public function requirementsPass(bool $includeBuildTools = false): bool
+    public function requirementsPass(bool $includeBuildTools = true): bool
     {
         foreach ($this->serverRequirements() as $name => $passed) {
             if (! $passed && ($includeBuildTools || ! in_array($name, ['Composer', 'Node.js', 'npm'], true))) {
@@ -100,6 +109,10 @@ class InstallationService
         }
 
         Artisan::call('key:generate', ['--force' => true]);
+        $environment = (string) @file_get_contents(base_path('.env'));
+        if (preg_match('/^APP_KEY=(.*)$/m', $environment, $matches)) {
+            config(['app.key' => trim($matches[1], "\\\"' ")]);
+        }
     }
 
     public function testDatabaseConnection(): void
@@ -113,18 +126,24 @@ class InstallationService
 
     public function migrate(): void
     {
-        Artisan::call('migrate', ['--force' => true]);
+        if (Artisan::call('migrate', ['--force' => true]) !== 0) {
+            throw new RuntimeException('Database migration failed. Check the Laravel log for details.');
+        }
     }
 
     public function seedBase(): void
     {
-        Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\RolesAndPermissionsSeeder', '--force' => true]);
-        Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DatabaseSeeder', '--force' => true]);
+        if (Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\RolesAndPermissionsSeeder', '--force' => true]) !== 0
+            || Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DatabaseSeeder', '--force' => true]) !== 0) {
+            throw new RuntimeException('Base data seeding failed. Check the Laravel log for details.');
+        }
     }
 
     public function seedDemo(): void
     {
-        Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DemoDataSeeder', '--force' => true]);
+        if (Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DemoDataSeeder', '--force' => true]) !== 0) {
+            throw new RuntimeException('Demo data seeding failed. Check the Laravel log for details.');
+        }
     }
 
     public function createAdmin(string $name, string $email, string $password): User
@@ -147,6 +166,13 @@ class InstallationService
         Setting::set('locale.default', $locale, 'general');
     }
 
+    public function createStorageLink(): void
+    {
+        if (Artisan::call('storage:link', ['--force' => true]) !== 0) {
+            throw new RuntimeException('Unable to create the public storage link.');
+        }
+    }
+
     public function lock(): void
     {
         $directory = dirname(storage_path('installed.lock'));
@@ -155,6 +181,18 @@ class InstallationService
             mkdir($directory, 0775, true);
         }
 
+        // Restore the drivers temporarily replaced by the fresh web bootstrap.
+        if (is_file(base_path('.env'))) {
+            $environment = (string) file_get_contents(base_path('.env'));
+            if (preg_match('/^KELVCMC_INSTALLER_ORIGINAL_SESSION_DRIVER=(.*)$/m', $environment, $match)) {
+                $this->setEnvironmentValue(base_path('.env'), 'SESSION_DRIVER', $match[1]);
+            }
+            if (preg_match('/^KELVCMC_INSTALLER_ORIGINAL_CACHE_STORE=(.*)$/m', $environment, $match)) {
+                $this->setEnvironmentValue(base_path('.env'), 'CACHE_STORE', $match[1]);
+            }
+            $this->removeEnvironmentValue(base_path('.env'), 'KELVCMC_INSTALLER_ORIGINAL_SESSION_DRIVER');
+            $this->removeEnvironmentValue(base_path('.env'), 'KELVCMC_INSTALLER_ORIGINAL_CACHE_STORE');
+        }
         file_put_contents(storage_path('installed.lock'), now()->toIso8601String().PHP_EOL, LOCK_EX);
     }
 
@@ -163,7 +201,7 @@ class InstallationService
         return trim(Artisan::output()) === '' ? $message : Artisan::output();
     }
 
-    protected function binaryAvailable(string $binary): bool
+    public function binaryAvailable(string $binary): bool
     {
         $command = PHP_OS_FAMILY === 'Windows' ? "where {$binary}" : "command -v {$binary}";
         $redirect = PHP_OS_FAMILY === 'Windows' ? ' 2>NUL' : ' 2>/dev/null';
@@ -187,5 +225,12 @@ class InstallationService
         }
 
         file_put_contents($path, $contents, LOCK_EX);
+    }
+
+    protected function removeEnvironmentValue(string $path, string $key): void
+    {
+        $contents = (string) @file_get_contents($path);
+        $contents = preg_replace('/^'.preg_quote($key, '/').'=.*(?:\\R|$)/m', '', $contents);
+        file_put_contents($path, (string) $contents, LOCK_EX);
     }
 }

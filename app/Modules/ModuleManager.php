@@ -16,6 +16,9 @@ class ModuleManager
     protected array $availableModules = [];
 
     /** @var array<string, array<string, mixed>> */
+    protected array $moduleManifests = [];
+
+    /** @var array<string, array<string, mixed>> */
     protected array $plugins = [];
 
     /** @var array<string, array<string, mixed>> */
@@ -47,6 +50,7 @@ class ModuleManager
             $manifest = json_decode(File::get($manifestPath), true) ?: [];
 
             $id = strtolower((string) ($manifest['id'] ?? basename($directory)));
+            $this->moduleManifests[$id] = $manifest;
 
             $class = $manifest['class'] ?? null;
             $module = null;
@@ -73,16 +77,18 @@ class ModuleManager
             }
 
             $module = $this->modules[$id] ?? null;
-            if ($module?->serviceProvider() && class_exists($module->serviceProvider())) {
-                app()->register($module->serviceProvider());
+            $provider = $manifest['service_provider'] ?? $module?->serviceProvider();
+            if ($provider && class_exists($provider)) {
+                app()->register($provider);
             }
-            if ($module?->routesPath()) {
+            if ($module?->routesPath() && empty($manifest['routes'])) {
                 $this->loadRoutesFile($module->routesPath());
             }
         }
 
         // --- Plugins ---
-        foreach (config('modules.paths', []) as $basePath) {                foreach ($this->scanPluginManifests($basePath) as $manifest) {
+        foreach (config('modules.paths', []) as $basePath) {
+            foreach ($this->scanPluginManifests($basePath) as $manifest) {
                 $id = strtolower((string) ($manifest['name'] ?? basename(dirname($manifest['path']))));
                 $this->availablePlugins[$id] = $manifest;
 
@@ -162,7 +168,15 @@ class ModuleManager
             ? true
             : (bool) ($configured[$id] ?? $configured[ucfirst($id)] ?? true);
 
-        return (bool) Setting::get("modules.enabled.{$id}", $default);
+        if (! file_exists(storage_path('installed.lock'))) {
+            return $default;
+        }
+
+        try {
+            return (bool) Setting::get("modules.enabled.{$id}", $default);
+        } catch (\Throwable) {
+            return $default;
+        }
     }
 
     public function enable(string $id): void
@@ -182,7 +196,7 @@ class ModuleManager
             return false;
         }
 
-        $path = $module->migrationsPath();
+        $path = $this->moduleManifests[$id]['migrations'] ?? $module->migrationsPath();
         if ($path && is_dir(base_path($path))) {
             Artisan::call('migrate', ['--path' => $path, '--force' => true]);
         }
@@ -231,23 +245,22 @@ class ModuleManager
     {
         // Settings are stored in the database, which may not exist during the
         // first installer request. Fall back to config until installation ends.
-        if (! file_exists(storage_path('installed.lock'))) {
-            $configured = config('modules.modules', []);
-
-            return $configured === [] || $configured === null
-                ? true
-                : (bool) ($configured[$id] ?? $configured[ucfirst($id)] ?? true);
-        }
-
         $configured = config('modules.modules', []);
+        $default = $configured === [] || $configured === null
+            ? true
+            : (bool) ($configured[$id] ?? $configured[ucfirst($id)] ?? true);
 
-        if ($configured === [] || $configured === null) {
-            $default = true;
-        } else {
-            $default = (bool) ($configured[$id] ?? $configured[ucfirst($id)] ?? true);
+        // Settings are unavailable before the schema exists. Configuration is
+        // the safe default for the first installer request.
+        if (! file_exists(storage_path('installed.lock'))) {
+            return $default;
         }
 
-        return (bool) Setting::get("modules.enabled.{$id}", $default);
+        try {
+            return (bool) Setting::get("modules.enabled.{$id}", $default);
+        } catch (\Throwable) {
+            return $default;
+        }
     }
 
     /** @return array<int, array<string, mixed>> */

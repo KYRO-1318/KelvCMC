@@ -10,6 +10,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Install KelvCMC</title>
     <link rel="stylesheet" href="{{ asset('css/themes/kelv.css') }}">
+    @if (is_file(public_path('build/manifest.json')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
 <style>
 body{background:#020617;color:#f8fafc}.card{border:1px solid rgba(148,163,184,.14);border-radius:1rem;background:rgba(15,23,42,.86);padding:1.5rem;box-shadow:0 20px 50px rgba(0,0,0,.25)}.input{width:100%;border:1px solid #334155;border-radius:.5rem;background:#0f172a;color:#f8fafc;padding:.65rem .8rem}.btn-primary{display:inline-flex;justify-content:center;border:0;border-radius:.5rem;background:#7c3aed;color:#fff;padding:.7rem 1rem;font-weight:600;cursor:pointer}.btn-primary:hover{background:#8b5cf6}
 </style>

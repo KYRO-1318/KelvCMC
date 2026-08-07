@@ -32,11 +32,11 @@ info "-----------------"
 
 # --- PHP & Composer checks -------------------------------------------------
 if ! command -v php >/dev/null 2>&1; then
-  fail "PHP 8.3+ is required but was not found. Install PHP with the pdo_mysql, mbstring, xml, curl and gd extensions."
+  fail "PHP 8.4+ is required but was not found. Install PHP with the pdo_mysql, mbstring, xml, curl and gd extensions."
 fi
 PHP_VERSION=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
-if [[ "${PHP_VERSION%%.*}" -lt 8 ]] || { [[ "${PHP_VERSION%%.*}" -eq 8 ]] && [[ "${PHP_VERSION##*.}" -lt 3 ]]; }; then
-  fail "PHP 8.3+ is required (found $PHP_VERSION)."
+if [[ "${PHP_VERSION%%.*}" -lt 8 ]] || { [[ "${PHP_VERSION%%.*}" -eq 8 ]] && [[ "${PHP_VERSION##*.}" -lt 4 ]]; }; then
+  fail "PHP 8.4+ is required (found $PHP_VERSION)."
 fi
 ok "PHP $PHP_VERSION detected"
 
@@ -68,27 +68,20 @@ else
   ok "Skipping dependency installation (--no-deps)"
 fi
 
-# --- Application key ---------------------------------------------------------
-if ! grep -q "^APP_KEY=.\+" .env 2>/dev/null; then
-  info "Generating application key..."
-  php artisan key:generate --force
-fi
-
-# --- Storage -----------------------------------------------------------------
-info "Creating storage link..."
-php artisan storage:link --force
-
-# --- Migrations & seeds -------------------------------------------------------
-info "Running migrations..."
-php artisan migrate --force
-
-info "Seeding base data (roles, permissions, settings, admin account)..."
-php artisan db:seed --force
-
+# --- Interactive application installer --------------------------------------
+# This is the single source of truth for .env, APP_KEY, database migrations,
+# settings and the first administrator.
+INSTALL_ARGS=(--force)
 if [ "$DEMO" = true ]; then
-  info "Seeding demo data..."
-  php artisan db:seed --class "Database\\Seeders\\DemoDataSeeder" --force
+  INSTALL_ARGS+=(--demo)
+else
+  INSTALL_ARGS+=(--no-demo)
 fi
+
+info "Running the KelvCMC setup wizard..."
+php artisan kelvcmc:install "${INSTALL_ARGS[@]}"
+
+# The CLI installer already creates the storage link and installed.lock.
 
 # --- Cron ---------------------------------------------------------------------
 info "Adding the Laravel scheduler to cron (skipped if already present)..."
@@ -107,11 +100,13 @@ APP_URL_VALUE=$(grep -E '^APP_URL=' .env | head -1 | cut -d= -f2-)
 APP_URL_VALUE=${APP_URL_VALUE:-http://localhost}
 echo "  Admin panel :   ${APP_URL_VALUE}/admin"
 echo "  Client portal : ${APP_URL_VALUE}"
-echo "  Default admin : admin@kelvcmc.local / password   (CHANGE IT IMMEDIATELY!)"
+echo "  Default admin : credentials chosen during the setup wizard"
 echo
 warn "Remaining steps:"
-echo "  1. Edit .env (DB credentials, mail, gateways, integrations)."
+echo "  1. Edit .env (mail, gateways, integrations)."
 echo "  2. Start the queue worker:  php artisan queue:work --daemon  (supervisor on production)"
 echo "  3. Open /admin and finish configuration (Settings → General)."
 echo
 echo "Full documentation: docs/installation-plesk.md and docs/production.md"
+echo
+echo "Run 'php artisan kelvcmc:doctor' to verify your installation is healthy."
